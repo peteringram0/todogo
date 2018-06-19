@@ -1,1 +1,1 @@
-go build -o ./bin/todo ./src/todo/main.go
+go build -o ./bin/todo ./main.go
