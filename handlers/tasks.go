@@ -1,56 +1,85 @@
 package handlers
 
 import (
-    "fmt"
-    "database/sql"
-    "net/http"
-    _ "strconv"
-    "github.com/labstack/echo"
-    "../models"
+	"database/sql"
+	"net/http"
+	_ "strconv"
+
+	"../models"
+	"github.com/labstack/echo"
 )
 
 type H map[string]interface{}
 
 // GetTasks endpoint
 func GetTasks(db *sql.DB) echo.HandlerFunc {
-    return func(c echo.Context) error {
-        return c.JSON(http.StatusOK, models.GetTasks(db))
-    }
+	return func(c echo.Context) error {
+		return c.JSON(http.StatusOK, models.GetTasks(db))
+	}
 }
 
+func PostTask(db *sql.DB) echo.HandlerFunc {
+	return func(c echo.Context) error {
 
-// // Handler
-// func(c echo.Context) (err error) {
-//   u := new(User)
-//   if err = c.Bind(u); err != nil {
-//     return
-//   }
-//   return c.JSON(http.StatusOK, u)
-// }
+		// Instantiate a new task
+		var task models.Task
 
-func PutTasks(db *sql.DB) echo.HandlerFunc {
-    return func(c echo.Context) error {
+		// Map imcoming JSON body to the new Task
+		c.Bind(&task)
 
-      // Instantiate a new task
-      var task models.Task
+		// If name is empty return bad request
+		if task.Name == "" {
+			return c.JSON(http.StatusBadRequest, H{
+				"error": "Please send us a name!!",
+			})
+		}
 
-      // Map imcoming JSON body to the new Task
-      c.Bind(&task)
+		// Add a task using our new model
+		id, err := models.PostTask(db, task.Name)
 
-      // @TODO Here, if task.Name is missing or empty error
+		// Return a JSON response if successful
+		if err == nil {
+			return c.JSON(http.StatusCreated, H{
+				"created": id,
+			})
+			// Handle any errors
+		} else {
+			return err
+		}
 
-      // Add a task using our new model
-      id, err := models.PutTasks(db, task.Name)
+	}
+}
 
-      // Return a JSON response if successful
-      if err == nil {
-          return c.JSON(http.StatusCreated, H{
-              "created": id,
-          })
-      // Handle any errors
-      } else {
-          return err
-      }
+func PutTask(db *sql.DB) echo.HandlerFunc {
+	return func(c echo.Context) error {
 
-    }
+		// Instantiate a new task
+		var task models.Task
+
+		// Map imcoming JSON body to the new Task
+		c.Bind(&task)
+
+		// If name is empty return bad request
+		if task.Name == "" {
+			return c.JSON(http.StatusBadRequest, H{
+				"error": "Please send us a name!!",
+			})
+		}
+
+		// Add a task using our new model
+		rowsAffected, err := models.PutTask(db, c.Param("id"), task.Name)
+
+		if rowsAffected == 0 {
+			return c.JSON(http.StatusBadRequest, H{
+				"error": "Cant updated that !!",
+			})
+		} else if rowsAffected >= 1 && err == nil {
+			return c.JSON(http.StatusCreated, H{
+				"updated": c.Param("id"),
+			})
+		} else {
+			return err
+		}
+
+	}
 }
