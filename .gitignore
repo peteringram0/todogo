@@ -2,3 +2,4 @@ storage.db
 /bin
 /src
 .idea
+/vendor

@@ -1,13 +1,12 @@
 ### Install
 ````bash
-go get github.com/labstack/echo
-go get github.com/mattn/go-sqlite3
+...
 ````
 
 #### Install - Go Path
 Add the following to ~/.zshrc
 ````bash
-export GOPATH=$HOME/code/todogo
+export GOPATH=$HOME/gocode
 export PATH=$PATH:$GOPATH/bin
 ````
 
@@ -18,12 +17,15 @@ bash ./build.sh
 
 ### Run
 ````bash
-./bin/todo
+todo
 ````
 
 
 ##### Notes
 ````bash
+# Install DEP
+brew install dep
+
 # View Database
 sqlite3 storage.db
 ````
