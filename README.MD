@@ -29,3 +29,7 @@ brew install dep
 # View Database
 sqlite3 storage.db
 ````
+
+#### Issues
+* Bitbucket not pushing to heroku
+* Running locally gets random port

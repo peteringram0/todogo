@@ -19,4 +19,6 @@ pipelines:
           - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
           - dep ensure
           - go build -ldflags="-s -w" ./main.go
+          - cd "${GOPATH}/src/${BITBUCKET_REPO_SLUG}"
+          - git status
           - git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git master
