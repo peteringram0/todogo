@@ -25,9 +25,9 @@
 #   unused-packages = true
 
 [metadata.heroku]
-  root-package = "bitbucket.org/peteringram0/todogo"
+  root-package = "todogo"
   go-version = "go1.9.2"
-  # install = [ ".", "./cmd/..." ]
+  # install = [ "./..." ]
   ensure = "true"
 
 [[constraint]]
