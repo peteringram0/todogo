@@ -19,7 +19,7 @@ pipelines:
           # - go build -ldflags="-s -w" ./main.go
 
           - source bitbucket-pipelines-go.sh
-          - cd ${IMPORT_PATH}/todogo
+          - cd ${IMPORT_PATH}
           - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
           - dep ensure
           - go build -ldflags="-s -w" ./main.go
