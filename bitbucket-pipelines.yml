@@ -12,7 +12,6 @@ pipelines:
   default:
     - step:
         script: # Modify the commands below to build your repository.
-          - echo $PWD
           - PACKAGE_PATH="${GOPATH}/src/${BITBUCKET_REPO_SLUG}"
           - mkdir -pv "${PACKAGE_PATH}"
           - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
@@ -20,5 +19,5 @@ pipelines:
           - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
           - dep ensure
           - go build -ldflags="-s -w" ./main.go
-          - git status
+          - cd /opt/atlassian/pipelines/agent/build
           - git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git master
