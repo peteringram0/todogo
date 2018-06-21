@@ -5,7 +5,8 @@ import (
 
 	"todogo/handlers"
 
-	// "os"
+	"os"
+
 	"github.com/labstack/echo"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -26,10 +27,10 @@ func main() {
 	e.PUT("/tasks/:id", handlers.PutTask(db))
 	// e.DELETE("/tasks/:id", func(c echo.Context) error { return c.JSON(200, "DELETE Task "+c.Param("id")) })
 
-	// port := os.Getenv("PORT")
+	port := os.Getenv("PORT")
 
 	// Start as a web server
-	e.Start(":8000")
+	e.Start(":" + port)
 
 }
 
