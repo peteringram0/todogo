@@ -15,8 +15,8 @@ pipelines:
           - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
           - cd "${PACKAGE_PATH}"
           - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-          - GOPATH="/go/src/bitbucket.org/peteringram0"
           - dep ensure
+          - GOPATH="/go/src/bitbucket.org/peteringram0"
           - go build -ldflags="-s -w" ./main.go
 
           # - source bitbucket-pipelines-go.sh
