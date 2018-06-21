@@ -11,11 +11,11 @@ pipelines:
         script: # Modify the commands below to build your repository.
 
           - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_OWNER}/${BITBUCKET_REPO_SLUG}"
-          - echo ${GOPATH}
           - mkdir -pv "${PACKAGE_PATH}"
           - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
           - cd "${PACKAGE_PATH}"
           - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+          - GOPATH="/go/src/bitbucket.org/peteringram0"
           - dep ensure
           - go build -ldflags="-s -w" ./main.go
 
