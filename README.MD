@@ -8,6 +8,7 @@ Add the following to ~/.zshrc
 ````bash
 export GOPATH=$HOME/gocode
 export PATH=$PATH:$GOPATH/bin
+export PORT=8000 # Port number for running the app locally or Heroku will fill this
 ````
 
 ### Build
@@ -29,7 +30,3 @@ brew install dep
 # View Database
 sqlite3 storage.db
 ````
-
-#### Issues
-* Bitbucket not pushing to heroku
-* Running locally gets random port
