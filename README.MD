@@ -1,6 +1,6 @@
 ### Install
 ````bash
-...
+dep ensure
 ````
 
 #### Install - Go Path
