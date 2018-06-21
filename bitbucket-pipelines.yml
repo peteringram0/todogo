@@ -5,11 +5,13 @@
 # You can specify a custom docker image from Docker Hub as your build environment.
 image: golang:1.9
 
+clone:
+  depth: full
+
 pipelines:
   default:
     - step:
         script: # Modify the commands below to build your repository.
-
           - PACKAGE_PATH="${GOPATH}/src/${BITBUCKET_REPO_SLUG}"
           - mkdir -pv "${PACKAGE_PATH}"
           - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
@@ -17,9 +19,3 @@ pipelines:
           - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
           - dep ensure
           - go build -ldflags="-s -w" ./main.go
-
-          # - source bitbucket-pipelines-go.sh
-          # - cd ${IMPORT_PATH}
-          # - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-          # - dep ensure
-          # - go build -ldflags="-s -w" ./main.go
