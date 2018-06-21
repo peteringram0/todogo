@@ -3,7 +3,7 @@ package main
 import (
 	"database/sql"
 
-	"todogo/handlers"
+	"todoGO/handlers"
 	"github.com/labstack/echo"
 	_ "github.com/mattn/go-sqlite3"
 )
