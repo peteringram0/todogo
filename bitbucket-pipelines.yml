@@ -13,6 +13,5 @@ pipelines:
           - mkdir -pv "\${PACKAGE_PATH}"
           - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "\${PACKAGE_PATH}"
           - cd "\${PACKAGE_PATH}"
-          - go get github.com/labstack/echo
-          - go get github.com/mattn/go-sqlite3
-          - go build -v
+          - go get
+          - go build
