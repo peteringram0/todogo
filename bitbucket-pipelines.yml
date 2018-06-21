@@ -19,4 +19,4 @@ pipelines:
           - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
           - dep ensure
           - go build -ldflags="-s -w" ./main.go
-          - git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git master
+          - git push https://heroku:f33703d1-3813-4068-b1a4-e6eb2a83a427@git.heroku.com/todogo.git master
