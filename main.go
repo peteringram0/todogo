@@ -2,14 +2,37 @@ package main
 
 import (
 	"database/sql"
+	"html/template"
+	"io"
 
 	"todogo/handlers"
 
 	"os"
 
+	"todogo/auth"
+
 	"github.com/labstack/echo"
 	_ "github.com/mattn/go-sqlite3"
+
+	"github.com/gorilla/sessions"
+	"github.com/labstack/echo-contrib/session"
 )
+
+// TemplateRenderer is a custom html/template renderer for Echo framework
+type TemplateRenderer struct {
+	templates *template.Template
+}
+
+// Render renders a template document
+func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+
+	// Add global methods if data is a map
+	if viewContext, isMap := data.(map[string]interface{}); isMap {
+		viewContext["reverse"] = c.Echo().Reverse
+	}
+
+	return t.templates.ExecuteTemplate(w, name, data)
+}
 
 // todo.go
 func main() {
@@ -20,12 +43,23 @@ func main() {
 	// Instance of echo
 	e := echo.New()
 
+	renderer := &TemplateRenderer{
+		templates: template.Must(template.ParseGlob("public/views/*.html")),
+	}
+	e.Renderer = renderer
+
+	// Setup sessions
+	e.Use(session.Middleware(sessions.NewCookieStore([]byte("secret"))))
+
 	e.File("/", "public/index.html")
 
 	e.GET("/tasks", handlers.GetTasks(db))
 	e.POST("/tasks", handlers.PostTask(db))
 	e.PUT("/tasks/:id", handlers.PutTask(db))
 	// e.DELETE("/tasks/:id", func(c echo.Context) error { return c.JSON(200, "DELETE Task "+c.Param("id")) })
+
+	e.GET("/auth", auth.AuthHandler())
+	e.GET("/login", auth.LoginHandler())
 
 	port := os.Getenv("PORT")
 
