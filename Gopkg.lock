@@ -83,6 +83,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/michaeljs1990/sqlitestore"
+  packages = ["."]
+  revision = "37b8425f7b437b5f20e0a0f50b3fe1a3f069c5bc"
+
+[[projects]]
+  branch = "master"
   name = "github.com/valyala/bytebufferpool"
   packages = ["."]
   revision = "e746df99fe4a3986f4d4f79e13c1e0117ce9c2f7"
@@ -149,6 +155,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ba7b6035e204f661af59f73506501b58c2184fc1d3b697f03386fa151ed176cb"
+  inputs-digest = "6d3e24fe75ce5895cf84816cd7719d46add0c86c1076196a02be76b4eb188405"
   solver-name = "gps-cdcl"
   solver-version = 1

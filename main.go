@@ -11,12 +11,22 @@ import (
 
 	"todogo/auth"
 
-	"github.com/labstack/echo"
-	_ "github.com/mattn/go-sqlite3"
-
 	"github.com/gorilla/sessions"
+	"github.com/labstack/echo"
 	"github.com/labstack/echo-contrib/session"
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/michaeljs1990/sqlitestore"
 )
+
+var store *sqlitestore.SqliteStore
+
+func init() {
+	var err error
+	store, err = sqlitestore.NewSqliteStore("./database", "sessions", "/", 3600, []byte("<SecretKey>"))
+	if err != nil {
+		panic(err)
+	}
+}
 
 // TemplateRenderer is a custom html/template renderer for Echo framework
 type TemplateRenderer struct {
