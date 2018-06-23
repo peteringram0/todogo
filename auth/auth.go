@@ -2,10 +2,10 @@ package auth
 
 import (
 	"crypto/rand"
-	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/gorilla/sessions"
 	"github.com/labstack/echo"
 
 	"github.com/labstack/echo-contrib/session"
@@ -66,19 +66,20 @@ func LoginHandler() echo.HandlerFunc {
 		state := RandToken(32)
 		link := getLoginURL(state)
 
-		session, err := session.Get("session", c)
+		// session, err := session.Get("session", c)
 
-		if err != nil {
-			panic(err)
-		}
-
-		// session.Options = &sessions.Options{
-		// Path:     "/",
-		// MaxAge:   86400 * 7,
-		// HttpOnly: true,
+		// if err != nil {
+		// panic(err)
 		// }
-		session.Values["state"] = state
-		session.Save(c.Request(), c.Response())
+
+		sess, _ := session.Get("session", c)
+		sess.Options = &sessions.Options{
+			Path:     "/",
+			MaxAge:   86400 * 7,
+			HttpOnly: true,
+		}
+		sess.Values["state"] = state
+		sess.Save(c.Request(), c.Response())
 
 		return c.Render(http.StatusOK, "auth.html", map[string]interface{}{
 			"link": link,
@@ -92,9 +93,13 @@ func AuthHandler() echo.HandlerFunc {
 
 		// Handle the exchange code to initiate a transport.
 		// session := sessions.Default(c)
-		session, _ := session.Get("session", c)
-		valWithOutType := session.Values["state"]
-		fmt.Printf("valWithOutType: %s\n", valWithOutType)
+		// session, _ := session.Get("session", c)
+		// valWithOutType := session.Values["state"]
+		// fmt.Printf("valWithOutType: %s\n", valWithOutType)
+		sess, _ := session.Get("session", c)
+		return c.JSON(http.StatusOK, H{
+			"sess": sess.Values["state"],
+		})
 
 		// queryState := c.Request.URL.Query().Get("state")
 		// if retrievedState != queryState {

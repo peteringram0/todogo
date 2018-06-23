@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"html/template"
 	"io"
+	"net/http"
 
 	"todogo/handlers"
 
@@ -15,18 +16,19 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo-contrib/session"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/michaeljs1990/sqlitestore"
 )
 
-var store *sqlitestore.SqliteStore
+type H map[string]interface{}
 
-func init() {
-	var err error
-	store, err = sqlitestore.NewSqliteStore("./database", "sessions", "/", 3600, []byte("<SecretKey>"))
-	if err != nil {
-		panic(err)
-	}
-}
+// var store *sqlitestore.SqliteStore
+
+// func init() {
+// var err error
+// store, err = sqlitestore.NewSqliteStore("./database", "sessions", "/", 3600, []byte("<SecretKey>"))
+// if err != nil {
+// panic(err)
+// }
+// }
 
 // TemplateRenderer is a custom html/template renderer for Echo framework
 type TemplateRenderer struct {
@@ -70,6 +72,25 @@ func main() {
 
 	e.GET("/auth", auth.AuthHandler())
 	e.GET("/login", auth.LoginHandler())
+
+	e.GET("/session-set", func(c echo.Context) error {
+		sess, _ := session.Get("session", c)
+		sess.Options = &sessions.Options{
+			Path:     "/",
+			MaxAge:   86400 * 7,
+			HttpOnly: true,
+		}
+		sess.Values["foo"] = "bar"
+		sess.Save(c.Request(), c.Response())
+		return c.NoContent(http.StatusOK)
+	})
+
+	e.GET("/session-get", func(c echo.Context) error {
+		sess, _ := session.Get("session", c)
+		return c.JSON(http.StatusOK, H{
+			"sess": sess.Values["foo"],
+		})
+	})
 
 	port := os.Getenv("PORT")
 
