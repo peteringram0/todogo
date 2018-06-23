@@ -9,11 +9,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"todogo/models"
 	"todogo/structs"
 
-	"github.com/gorilla/sessions"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo-contrib/session"
 	"golang.org/x/oauth2"
@@ -47,7 +48,7 @@ func init() {
 	conf = &oauth2.Config{
 		ClientID:     cred.Cid,
 		ClientSecret: cred.Csecret,
-		RedirectURL:  "http://127.0.0.1:8000/auth",
+		RedirectURL:  "http://127.0.0.1:8000/api/v1/auth",
 		Scopes: []string{
 			"https://www.googleapis.com/auth/userinfo.email", // https://developers.google.com/identity/protocols/googlescopes#google_sign-in
 		},
@@ -63,17 +64,21 @@ func LoginHandler() echo.HandlerFunc {
 		link := getLoginURL(state)
 
 		sess, _ := session.Get("session", c)
-		sess.Options = &sessions.Options{
-			Path:     "/",
-			MaxAge:   86400 * 7,
-			HttpOnly: true,
-		}
+		// sess.Options = &sessions.Options{
+		// 	Path:     "/",
+		// 	MaxAge:   86400 * 7,
+		// 	HttpOnly: true,
+		// }
 		sess.Values["state"] = state
 		sess.Save(c.Request(), c.Response())
 
-		return c.Render(http.StatusOK, "auth.html", H{
+		return c.JSON(http.StatusOK, H{
 			"link": link,
 		})
+
+		// return c.Render(http.StatusOK, "auth.html", H{
+		// "link": link,
+		// })
 
 	}
 }
@@ -140,21 +145,33 @@ func AuthHandler(db *sql.DB) echo.HandlerFunc {
 
 		}
 
-		// if _, mongoErr := db.LoadUser(u.Email); mongoErr == nil {
-		// 	seen = true
-		// } else {
-		// 	err = db.SaveUser(&u)
-		// 	if err != nil {
-		// 		log.Println(err)
-		// 		c.HTML(http.StatusBadRequest, "error.tmpl", gin.H{"message": "Error while saving user. Please try again."})
-		// 		return
-		// 	}
-		// }
+		/**
+			START JWT STUFF
+		**/
 
-		return c.Redirect(http.StatusSeeOther, "/me")
-		// return c.JSON(http.StatusCreated, H{
-		// "message": "Created, or already created!",
+		// Create token
+		token := jwt.New(jwt.SigningMethodHS256)
+
+		// Set claims
+		claims := token.Claims.(jwt.MapClaims)
+		claims["email"] = u.Email
+		claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+
+		// Generate encoded token and send it as response.
+		t, err := token.SignedString([]byte("secret"))
+		if err != nil {
+			return err
+		}
+
+		// return c.JSON(http.StatusOK, H{
+		// "token": t,
 		// })
+
+		/**
+			END JWT STUFF
+		**/
+
+		return c.Redirect(http.StatusSeeOther, "/?token="+t)
 
 	}
 }

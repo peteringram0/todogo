@@ -5,6 +5,85 @@
     <title></title>
   </head>
   <body>
-    <h1>Hello World</h1>
+    <h1>TODO List</h1>
+
+    <div id="vue">
+      <button v-if="link" type="button" @click="login()">Login</button>
+
+      <div v-if="token && user">
+        <img style="width: 100px; height: 100px; border-radius: 100px;" :src="user.picture"/>
+        <div>Email: {{ user.email }}</div>
+        <div>Name: {{ user.name }}</div>
+      </div>
+    </div>
+
   </body>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.min.js"></script>
+
+  <script type="text/javascript">
+    new Vue({
+      el: '#vue',
+      data: {
+        token: false,
+        user: false,
+        link: false
+      },
+      methods: {
+        login() {
+          window.location.href = this.link;
+        },
+        getGoogleLink() {
+            window.axios.get('/api/v1/login')
+              .then(function(r) {
+                this.link = r.data.link
+              }.bind(this))
+        },
+        getMe() {
+          window.axios.get('/api/v1/me',
+              {headers: {
+              "Authorization" : "Bearer " + this.token
+            }
+          })
+            .then(function(r) {
+              this.user = r.data;
+            }.bind(this))
+        }
+      },
+      mounted() {
+
+        // Get token from URL param
+        this.token = getParameterByName('token');
+
+        // Get google link if we dont have a token
+        if(this.token === false) {
+
+          if(localStorage.getItem("token") !== null) {
+            this.token = localStorage.getItem("token");
+            this.getMe();
+            return;
+          } else {
+            this.getGoogleLink();
+            return;
+          }
+
+        } else {
+          localStorage.setItem("token", this.token);
+          this.getMe();
+        }
+
+      }
+    })
+
+    function getParameterByName(name, url) {
+      if (!url) url = window.location.href;
+      name = name.replace(/[\[\]]/g, "\\$&");
+      var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+          results = regex.exec(url);
+      if (!results) return false;
+      if (!results[2]) return '';
+      return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
+  </script>
 </html>

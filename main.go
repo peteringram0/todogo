@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo-contrib/session"
+	"github.com/labstack/echo/middleware"
 	"github.com/michaeljs1990/sqlitestore"
 )
 
@@ -62,15 +63,19 @@ func main() {
 
 	e.File("/", "public/index.html")
 
-	e.GET("/tasks", handlers.GetTasks(db))
-	e.POST("/tasks", handlers.PostTask(db))
-	e.PUT("/tasks/:id", handlers.PutTask(db))
+	v1 := e.Group("/api/v1")
+
+	v1.GET("/tasks", handlers.GetTasks(db))
+	v1.POST("/tasks", handlers.PostTask(db))
+	v1.PUT("/tasks/:id", handlers.PutTask(db))
 	// e.DELETE("/tasks/:id", func(c echo.Context) error { return c.JSON(200, "DELETE Task "+c.Param("id")) })
+	v1.GET("/auth", auth.AuthHandler(db))
+	v1.GET("/login", auth.LoginHandler())
 
-	e.GET("/auth", auth.AuthHandler(db))
-	e.GET("/login", auth.LoginHandler())
-
-	e.GET("/me", func(c echo.Context) error {
+	// Restricted group
+	r := v1.Group("/me")
+	r.Use(middleware.JWT([]byte("secret")))
+	r.GET("", func(c echo.Context) error {
 		sess, _ := session.Get("session", c)
 		return c.JSON(http.StatusOK, H{
 			"email":   sess.Values["user-email"],
