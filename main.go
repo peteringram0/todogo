@@ -5,9 +5,9 @@ import (
 	"html/template"
 	"io"
 	"net/http"
-	"os"
 	"todogo/auth"
 	"todogo/handlers"
+	"todogo/helper"
 
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo"
@@ -84,10 +84,8 @@ func main() {
 		})
 	})
 
-	port := os.Getenv("PORT")
-
 	// Start as a web server
-	e.Start(":" + port)
+	e.Start(":" + helper.GetEnv("PORT", "8000"))
 
 }
 
