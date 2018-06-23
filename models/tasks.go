@@ -63,7 +63,6 @@ func PostTask(db *sql.DB, name string) (int64, error) {
 
 }
 
-// @TODO issue with this is its saying updated when it cant find a record
 func PutTask(db *sql.DB, id string, name string) (int64, error) {
 	sql := `UPDATE tasks SET name=? WHERE id=?`
 

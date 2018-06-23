@@ -5,30 +5,27 @@ import (
 	"html/template"
 	"io"
 	"net/http"
-
-	"todogo/handlers"
-
 	"os"
-
 	"todogo/auth"
+	"todogo/handlers"
 
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo-contrib/session"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/michaeljs1990/sqlitestore"
 )
 
 type H map[string]interface{}
 
-// var store *sqlitestore.SqliteStore
+var store *sqlitestore.SqliteStore
 
-// func init() {
-// var err error
-// store, err = sqlitestore.NewSqliteStore("./database", "sessions", "/", 3600, []byte("<SecretKey>"))
-// if err != nil {
-// panic(err)
-// }
-// }
+func init() {
+	var err error
+	store, err = sqlitestore.NewSqliteStore("./database", "sessions", "/", 3600, []byte("<SecretKey>"))
+	if err != nil {
+		panic(err)
+	}
+}
 
 // TemplateRenderer is a custom html/template renderer for Echo framework
 type TemplateRenderer struct {
@@ -70,25 +67,13 @@ func main() {
 	e.PUT("/tasks/:id", handlers.PutTask(db))
 	// e.DELETE("/tasks/:id", func(c echo.Context) error { return c.JSON(200, "DELETE Task "+c.Param("id")) })
 
-	e.GET("/auth", auth.AuthHandler())
+	e.GET("/auth", auth.AuthHandler(db))
 	e.GET("/login", auth.LoginHandler())
 
-	e.GET("/session-set", func(c echo.Context) error {
-		sess, _ := session.Get("session", c)
-		sess.Options = &sessions.Options{
-			Path:     "/",
-			MaxAge:   86400 * 7,
-			HttpOnly: true,
-		}
-		sess.Values["foo"] = "bar"
-		sess.Save(c.Request(), c.Response())
-		return c.NoContent(http.StatusOK)
-	})
-
-	e.GET("/session-get", func(c echo.Context) error {
+	e.GET("/me", func(c echo.Context) error {
 		sess, _ := session.Get("session", c)
 		return c.JSON(http.StatusOK, H{
-			"sess": sess.Values["foo"],
+			"user": sess.Values["user-id"],
 		})
 	})
 
@@ -119,9 +104,16 @@ func initDB(filepath string) *sql.DB {
 
 func migrate(db *sql.DB) {
 	sql := `
-    CREATE TABLE IF NOT EXISTS tasks(
+		CREATE TABLE IF NOT EXISTS tasks(
         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
         name VARCHAR NOT NULL
+    );
+
+		CREATE TABLE IF NOT EXISTS users(
+        id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+        email VARCHAR NOT NULL,
+				name VARCHAR NOT NULL,
+				picture VARCHAR NOT NULL
     );
     `
 

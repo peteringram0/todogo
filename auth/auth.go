@@ -2,32 +2,28 @@ package auth
 
 import (
 	"crypto/rand"
-	"log"
-	"net/http"
-
-	"github.com/gorilla/sessions"
-	"github.com/labstack/echo"
-
-	"github.com/labstack/echo-contrib/session"
-
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
-
+	"database/sql"
 	"encoding/base64"
 	"encoding/json"
 	"io/ioutil"
+	"log"
+	"net/http"
 	"os"
+
+	"todogo/models"
+	"todogo/structs"
+
+	"github.com/gorilla/sessions"
+	"github.com/labstack/echo"
+	"github.com/labstack/echo-contrib/session"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 )
 
 type H map[string]interface{}
 
-var cred Credentials
+var cred structs.Credentials
 var conf *oauth2.Config
-
-type Credentials struct {
-	Cid     string `json:"cid"`
-	Csecret string `json:"csecret"`
-}
 
 func getLoginURL(state string) string {
 	return conf.AuthCodeURL(state)
@@ -66,12 +62,6 @@ func LoginHandler() echo.HandlerFunc {
 		state := RandToken(32)
 		link := getLoginURL(state)
 
-		// session, err := session.Get("session", c)
-
-		// if err != nil {
-		// panic(err)
-		// }
-
 		sess, _ := session.Get("session", c)
 		sess.Options = &sessions.Options{
 			Path:     "/",
@@ -88,57 +78,63 @@ func LoginHandler() echo.HandlerFunc {
 	}
 }
 
-func AuthHandler() echo.HandlerFunc {
+func AuthHandler(db *sql.DB) echo.HandlerFunc {
 	return func(c echo.Context) error {
 
-		// Handle the exchange code to initiate a transport.
-		// session := sessions.Default(c)
-		// session, _ := session.Get("session", c)
-		// valWithOutType := session.Values["state"]
-		// fmt.Printf("valWithOutType: %s\n", valWithOutType)
+		// Get the session from session - WORKING
 		sess, _ := session.Get("session", c)
-		return c.JSON(http.StatusOK, H{
-			"sess": sess.Values["state"],
-		})
 
-		// queryState := c.Request.URL.Query().Get("state")
-		// if retrievedState != queryState {
-		// log.Printf("Invalid session state: retrieved: %s; Param: %s", retrievedState, queryState)
-		// c.HTML(http.StatusUnauthorized, "error.tmpl", gin.H{"message": "Invalid session state."})
-		// return
-		// }
-		// code := c.Request.URL.Query().Get("code")
-		// tok, err := conf.Exchange(oauth2.NoContext, code)
-		// if err != nil {
-		// 	log.Println(err)
-		// 	c.HTML(http.StatusBadRequest, "error.tmpl", gin.H{"message": "Login failed. Please try again."})
-		// 	return
-		// }
-		//
-		// client := conf.Client(oauth2.NoContext, tok)
-		// userinfo, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")
-		// if err != nil {
-		// 	log.Println(err)
-		// 	c.AbortWithStatus(http.StatusBadRequest)
-		// 	return
-		// }
-		// defer userinfo.Body.Close()
-		// data, _ := ioutil.ReadAll(userinfo.Body)
-		// u := structs.User{}
-		// if err = json.Unmarshal(data, &u); err != nil {
-		// 	log.Println(err)
-		// 	c.HTML(http.StatusBadRequest, "error.tmpl", gin.H{"message": "Error marshalling response. Please try agian."})
-		// 	return
-		// }
-		// session.Set("user-id", u.Email)
-		// err = session.Save()
-		// if err != nil {
-		// 	log.Println(err)
-		// 	c.HTML(http.StatusBadRequest, "error.tmpl", gin.H{"message": "Error while saving session. Please try again."})
-		// 	return
-		// }
-		// seen := false
-		// db := database.MongoDBConnection{}
+		retrievedState := sess.Values["state"]
+		queryState := c.QueryParam("state")
+
+		// If our current state is different to the receved state !!
+		if retrievedState != queryState {
+			log.Printf("Invalid session state: retrieved: %s; Param: %s", retrievedState, queryState)
+			return c.JSON(http.StatusUnauthorized, H{
+				"error": "Invalid session state",
+			})
+		}
+
+		code := c.QueryParam("code")
+		tok, err := conf.Exchange(oauth2.NoContext, code)
+		if err != nil {
+			log.Println(err)
+			return c.JSON(http.StatusUnauthorized, H{
+				"error": "Login failed",
+			})
+		}
+
+		client := conf.Client(oauth2.NoContext, tok)
+		userinfo, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")
+		if err != nil {
+			log.Println(err)
+			return echo.NewHTTPError(http.StatusUnauthorized, "Please provide valid credentials")
+		}
+
+		defer userinfo.Body.Close()
+		data, _ := ioutil.ReadAll(userinfo.Body)
+		u := structs.User{}
+		if err = json.Unmarshal(data, &u); err != nil {
+			log.Println(err)
+			return c.JSON(http.StatusUnauthorized, H{
+				"error": "Unmarshal failed",
+			})
+		}
+
+		sess.Values["user-id"] = u.Email
+		sess.Save(c.Request(), c.Response())
+
+		// @TODO - Load the user if they exist or create them if they dont exist
+		// models.CreateUser(db, u)
+
+		id, err := models.GetUser(db, u.Email)
+
+		if err != nil {
+			log.Println(err)
+		} else {
+			log.Println(id)
+		}
+
 		// if _, mongoErr := db.LoadUser(u.Email); mongoErr == nil {
 		// 	seen = true
 		// } else {
@@ -149,7 +145,6 @@ func AuthHandler() echo.HandlerFunc {
 		// 		return
 		// 	}
 		// }
-		// c.HTML(http.StatusOK, "battle.tmpl", gin.H{"email": u.Email, "seen": seen})
 
 		return c.JSON(http.StatusCreated, H{
 			"message": "AuthHandler",
