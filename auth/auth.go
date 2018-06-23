@@ -49,7 +49,7 @@ func init() {
 	conf = &oauth2.Config{
 		ClientID:     cred.Cid,
 		ClientSecret: cred.Csecret,
-		RedirectURL:  helper.GetEnv("RedirectURL", "http://127.0.0.1:8000/api/v1/auth"),
+		RedirectURL:  helper.GetEnv("REDIRECT_URL", "http://127.0.0.1:8000/api/v1/auth"),
 		Scopes: []string{
 			"https://www.googleapis.com/auth/userinfo.email", // https://developers.google.com/identity/protocols/googlescopes#google_sign-in
 		},
