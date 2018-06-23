@@ -2,7 +2,6 @@ package models
 
 import (
 	"database/sql"
-	"log"
 	"todogo/structs"
 )
 
@@ -32,7 +31,7 @@ func CreateUser(db *sql.DB, user structs.User) (int64, error) {
 
 func GetUser(db *sql.DB, email string) (string, error) {
 
-	sql := `SELECT name FROM users WHERE email=?`
+	sql := `SELECT id FROM users WHERE email=?`
 
 	// Create a prepared SQL statement
 	stmt, err := db.Prepare(sql)
@@ -49,7 +48,8 @@ func GetUser(db *sql.DB, email string) (string, error) {
 
 	// Exit if we get an error
 	if err != nil {
-		log.Fatal(err)
+		// log.Fatal(err)
+		// log.Println(err)
 		return "", err
 	}
 

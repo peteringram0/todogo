@@ -6,6 +6,7 @@ import (
 	_ "strconv"
 
 	"todogo/models"
+	"todogo/structs"
 
 	"github.com/labstack/echo"
 )
@@ -23,7 +24,7 @@ func PostTask(db *sql.DB) echo.HandlerFunc {
 	return func(c echo.Context) error {
 
 		// Instantiate a new task
-		var task models.Task
+		var task structs.Task
 
 		// Map imcoming JSON body to the new Task
 		c.Bind(&task)
@@ -55,7 +56,7 @@ func PutTask(db *sql.DB) echo.HandlerFunc {
 	return func(c echo.Context) error {
 
 		// Instantiate a new task
-		var task models.Task
+		var task structs.Task
 
 		// Map imcoming JSON body to the new Task
 		c.Bind(&task)

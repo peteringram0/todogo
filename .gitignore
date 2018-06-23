@@ -1,6 +1,6 @@
 storage.db
+sessions.db
 /bin
 /src
 .idea
 /vendor
-database

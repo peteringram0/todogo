@@ -2,22 +2,10 @@ package models
 
 import (
 	"database/sql"
-
-	_ "github.com/mattn/go-sqlite3"
+	"todogo/structs"
 )
 
-// Task is a struct containing Task data
-type Task struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
-
-// TaskCollection is collection of Tasks
-type TaskCollection struct {
-	Tasks []Task `json:"items"`
-}
-
-func GetTasks(db *sql.DB) TaskCollection {
+func GetTasks(db *sql.DB) structs.TaskCollection {
 	sql := "SELECT * FROM tasks"
 	rows, err := db.Query(sql)
 	// Exit if the SQL doesn't work for some reason
@@ -27,9 +15,9 @@ func GetTasks(db *sql.DB) TaskCollection {
 	// make sure to cleanup when the program exits
 	defer rows.Close()
 
-	result := TaskCollection{}
+	result := structs.TaskCollection{}
 	for rows.Next() {
-		task := Task{}
+		task := structs.Task{}
 		err2 := rows.Scan(&task.ID, &task.Name)
 		// Exit if we get an error
 		if err2 != nil {

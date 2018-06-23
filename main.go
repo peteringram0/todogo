@@ -21,7 +21,7 @@ var store *sqlitestore.SqliteStore
 
 func init() {
 	var err error
-	store, err = sqlitestore.NewSqliteStore("./database", "sessions", "/", 3600, []byte("<SecretKey>"))
+	store, err = sqlitestore.NewSqliteStore("./sessions.db", "sessions", "/", 3600, []byte("1J9DG}m)i=ew(?wfLb0)"))
 	if err != nil {
 		panic(err)
 	}
@@ -73,7 +73,9 @@ func main() {
 	e.GET("/me", func(c echo.Context) error {
 		sess, _ := session.Get("session", c)
 		return c.JSON(http.StatusOK, H{
-			"user": sess.Values["user-id"],
+			"email":   sess.Values["user-email"],
+			"name":    sess.Values["user-name"],
+			"picture": sess.Values["user-picture"],
 		})
 	})
 

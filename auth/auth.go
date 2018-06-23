@@ -71,7 +71,7 @@ func LoginHandler() echo.HandlerFunc {
 		sess.Values["state"] = state
 		sess.Save(c.Request(), c.Response())
 
-		return c.Render(http.StatusOK, "auth.html", map[string]interface{}{
+		return c.Render(http.StatusOK, "auth.html", H{
 			"link": link,
 		})
 
@@ -121,18 +121,23 @@ func AuthHandler(db *sql.DB) echo.HandlerFunc {
 			})
 		}
 
-		sess.Values["user-id"] = u.Email
+		sess.Values["user-email"] = u.Email
+		sess.Values["user-name"] = u.Name
+		sess.Values["user-picture"] = u.Picture
 		sess.Save(c.Request(), c.Response())
-
-		// @TODO - Load the user if they exist or create them if they dont exist
-		// models.CreateUser(db, u)
 
 		id, err := models.GetUser(db, u.Email)
 
 		if err != nil {
-			log.Println(err)
+
+			models.CreateUser(db, u)
+
+			log.Printf("created user")
+
 		} else {
-			log.Println(id)
+
+			log.Printf("user already exists ID: %s", id)
+
 		}
 
 		// if _, mongoErr := db.LoadUser(u.Email); mongoErr == nil {
@@ -146,9 +151,10 @@ func AuthHandler(db *sql.DB) echo.HandlerFunc {
 		// 	}
 		// }
 
-		return c.JSON(http.StatusCreated, H{
-			"message": "AuthHandler",
-		})
+		return c.Redirect(http.StatusSeeOther, "/me")
+		// return c.JSON(http.StatusCreated, H{
+		// "message": "Created, or already created!",
+		// })
 
 	}
 }
