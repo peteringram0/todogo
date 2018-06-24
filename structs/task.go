@@ -2,8 +2,8 @@ package structs
 
 // Task is a struct containing Task data
 type Task struct {
-	ID   int    `json:"id"`
-	UID  int    `json:"uid"`
+	ID   int64  `json:"id"`
+	UID  int64  `json:"uid"`
 	Name string `json:"name"`
 }
 

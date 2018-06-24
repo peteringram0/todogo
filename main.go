@@ -48,7 +48,7 @@ func main() {
 	tasks.Use(middleware.JWT([]byte("secret")))
 	tasks.GET("", handlers.GetTasks(db))
 	tasks.POST("", handlers.PostTask(db))
-	tasks.PUT(":id", handlers.PutTask(db))
+	tasks.PUT("/:id", handlers.PutTask(db))
 	// tasks.DELETE("/tasks/:id", func(c echo.Context) error { return c.JSON(200, "DELETE Task "+c.Param("id")) })
 
 	me := v1.Group("/me")

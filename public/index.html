@@ -10,21 +10,26 @@
     <div id="vue">
       <button v-if="link" type="button" @click="login()">Login</button>
 
-      <div v-if="token && user">
-        <button type="button" @click="logout()">Logout</button>
-        <img style="width: 100px; height: 100px; border-radius: 100px;" :src="user.picture"/>
-        <div>Email: {{ user.email }}</div>
-        <div>Name: {{ user.name }}</div>
+      <div ref="vue" style="display:none;">
+        <div v-if="token && user">
+          <button type="button" @click="logout()">Logout</button>
+          <img style="width: 100px; height: 100px; border-radius: 100px;" :src="user.picture"/>
+          <div>Email: {{ user.email }}</div>
+          <div>Name: {{ user.name }}</div>
 
-        <div style="margin-top: 50px">
-            <input type="text" v-model="task.name"/>
-            <button type="button" @click="addTask()">Add</button>
-            <ul>
-              <li v-for="task in user.tasks.items">{{ task.name }}</li>
-            </ul>
+          <div style="margin-top: 50px">
+              <input type="text" v-model="task.name"/>
+              <button type="button" @click="addTask()">Add</button>
+              <ul>
+                <li v-for="task in user.tasks.items">
+                  <input type="text" v-model="task.name">
+                  <button type="button" @click="edit(task)">Edit!</button>
+                </li>
+              </ul>
+          </div>
         </div>
-
       </div>
+
     </div>
 
   </body>

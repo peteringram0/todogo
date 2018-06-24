@@ -36,23 +36,18 @@ func PostTask(db *sql.DB) echo.HandlerFunc {
 			})
 		}
 
-		uid, error := helper.GetUID(c)
-
-		if error != nil {
-			return c.JSON(http.StatusBadRequest, H{
-				"error": "Error with user token",
-			})
-		}
+		uid := helper.GetUID(c)
 
 		// Add a task using our new model
 		id, err := models.PostTask(db, task.Name, uid)
 
 		// Return a JSON response if successful
 		if err == nil {
-			return c.JSON(http.StatusCreated, H{
-				"created": id,
+			return c.JSON(http.StatusCreated, structs.Task{
+				ID:   id,
+				UID:  uid,
+				Name: task.Name,
 			})
-			// Handle any errors
 		} else {
 			return err
 		}
@@ -84,7 +79,7 @@ func PutTask(db *sql.DB) echo.HandlerFunc {
 				"error": "Cant updated that !!",
 			})
 		} else if rowsAffected >= 1 && err == nil {
-			return c.JSON(http.StatusCreated, H{
+			return c.JSON(http.StatusOK, H{
 				"updated": c.Param("id"),
 			})
 		} else {

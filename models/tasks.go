@@ -11,11 +11,11 @@ import (
 func GetTasks(db *sql.DB, c echo.Context) structs.TaskCollection {
 	sql := "SELECT * FROM tasks WHERE uid=?"
 
-	id, errOne := helper.GetUID(c)
+	id := helper.GetUID(c)
 
-	if errOne != nil {
-		return structs.TaskCollection{}
-	}
+	// if errOne != nil {
+	// 	return structs.TaskCollection{}
+	// }
 
 	rows, err := db.Query(sql, id)
 	// Exit if the SQL doesn't work for some reason

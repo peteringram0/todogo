@@ -30,7 +30,12 @@ new Vue({
     getMe() {
       window.axios.get('/api/v1/me',{headers: {"Authorization" : "Bearer " + this.token}})
         .then(function(r) {
+
           this.user = r.data;
+
+          // Display it
+          this.$refs.vue.style = "display: block;"
+
         }.bind(this))
     },
     addTask() {
@@ -43,10 +48,15 @@ new Vue({
             if(this.user.tasks.items === null)
               this.user.tasks.items = [];
 
-            this.user.tasks.items.push({name: this.task.name})
+            this.user.tasks.items.push(r.data)
 
           }
         }.bind(this))
+    },
+    edit(item) {
+      window.axios.put('/api/v1/tasks/' + item.id, {
+        name: item.name
+      }, {headers: {"Authorization" : "Bearer " + this.token}})
     }
   },
   mounted() {
