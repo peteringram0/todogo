@@ -15,7 +15,7 @@ func GetMe(db *sql.DB) echo.HandlerFunc {
 
 		sess, _ := session.Get("session", c)
 
-		tasks := models.GetTasks(db)
+		tasks := models.GetTasks(db, c)
 
 		return c.JSON(http.StatusOK, structs.User{
 			Name:    sess.Values["user-name"].(string),

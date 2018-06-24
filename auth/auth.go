@@ -128,13 +128,17 @@ func AuthHandler(db *sql.DB) echo.HandlerFunc {
 		sess.Values["user-email"] = u.Email
 		sess.Values["user-name"] = u.Name
 		sess.Values["user-picture"] = u.Picture
-		sess.Save(c.Request(), c.Response())
 
-		_, err = models.GetUser(db, u.Email)
+		uid, err := models.GetUser(db, u.Email)
 
 		if err != nil {
-			models.CreateUser(db, u)
+			newUid, _ := models.CreateUser(db, u)
+			sess.Values["user-uid"] = newUid
+		} else {
+			sess.Values["user-uid"] = uid
 		}
+
+		sess.Save(c.Request(), c.Response())
 
 		// Create token
 		token := jwt.New(jwt.SigningMethodHS256)

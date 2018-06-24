@@ -23,22 +23,6 @@ func init() {
 	}
 }
 
-// // TemplateRenderer is a custom html/template renderer for Echo framework
-// type TemplateRenderer struct {
-// 	templates *template.Template
-// }
-//
-// // Render renders a template document
-// func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-//
-// 	// Add global methods if data is a map
-// 	if viewContext, isMap := data.(map[string]interface{}); isMap {
-// 		viewContext["reverse"] = c.Echo().Reverse
-// 	}
-//
-// 	return t.templates.ExecuteTemplate(w, name, data)
-// }
-
 // todo.go
 func main() {
 
@@ -48,29 +32,28 @@ func main() {
 	// Instance of echo
 	e := echo.New()
 
-	// renderer := &TemplateRenderer{
-	// 	templates: template.Must(template.ParseGlob("public/views/*.html")),
-	// }
-	// e.Renderer = renderer
-
 	// Setup sessions
 	e.Use(session.Middleware(sessions.NewCookieStore([]byte("secret"))))
+
+	e.Static("/public", "public")
 
 	e.File("/", "public/index.html")
 
 	v1 := e.Group("/api/v1")
 
-	v1.GET("/tasks", handlers.GetTasks(db))
-	v1.POST("/tasks", handlers.PostTask(db))
-	v1.PUT("/tasks/:id", handlers.PutTask(db))
-	// e.DELETE("/tasks/:id", func(c echo.Context) error { return c.JSON(200, "DELETE Task "+c.Param("id")) })
 	v1.GET("/auth", auth.AuthHandler(db))
 	v1.GET("/login", auth.LoginHandler())
 
-	// Restricted group
-	r := v1.Group("/me")
-	r.Use(middleware.JWT([]byte("secret")))
-	r.GET("", handlers.GetMe(db))
+	tasks := v1.Group("/tasks")
+	tasks.Use(middleware.JWT([]byte("secret")))
+	tasks.GET("", handlers.GetTasks(db))
+	tasks.POST("", handlers.PostTask(db))
+	tasks.PUT(":id", handlers.PutTask(db))
+	// tasks.DELETE("/tasks/:id", func(c echo.Context) error { return c.JSON(200, "DELETE Task "+c.Param("id")) })
+
+	me := v1.Group("/me")
+	me.Use(middleware.JWT([]byte("secret")))
+	me.GET("", handlers.GetMe(db))
 
 	logout := v1.Group("/logout")
 	logout.Use(middleware.JWT([]byte("secret")))
@@ -103,6 +86,7 @@ func migrate(db *sql.DB) {
 	sql := `
 		CREATE TABLE IF NOT EXISTS tasks(
         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+				uid INTEGER NOT NULL,
         name VARCHAR NOT NULL
     );
 

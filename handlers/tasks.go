@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 
+	"todogo/helper"
 	"todogo/models"
 	"todogo/structs"
 
@@ -12,10 +13,10 @@ import (
 
 type H map[string]interface{}
 
-// GetTasks endpoint
 func GetTasks(db *sql.DB) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		return c.JSON(http.StatusOK, models.GetTasks(db))
+		tasks := models.GetTasks(db, c)
+		return c.JSON(http.StatusOK, tasks)
 	}
 }
 
@@ -35,8 +36,16 @@ func PostTask(db *sql.DB) echo.HandlerFunc {
 			})
 		}
 
+		uid, error := helper.GetUID(c)
+
+		if error != nil {
+			return c.JSON(http.StatusBadRequest, H{
+				"error": "Error with user token",
+			})
+		}
+
 		// Add a task using our new model
-		id, err := models.PostTask(db, task.Name)
+		id, err := models.PostTask(db, task.Name, uid)
 
 		// Return a JSON response if successful
 		if err == nil {

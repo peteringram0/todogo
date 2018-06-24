@@ -20,6 +20,7 @@ func CreateUser(db *sql.DB, user structs.User) (int64, error) {
 
 	// Replace the '?' in our prepared statement with 'name'
 	result, err2 := stmt.Exec(user.Email, user.Name, user.Picture)
+
 	// Exit if we get an error
 	if err2 != nil {
 		panic(err2)
@@ -29,7 +30,7 @@ func CreateUser(db *sql.DB, user structs.User) (int64, error) {
 
 }
 
-func GetUser(db *sql.DB, email string) (string, error) {
+func GetUser(db *sql.DB, email string) (int64, error) {
 
 	sql := `SELECT id FROM users WHERE email=?`
 
@@ -42,15 +43,13 @@ func GetUser(db *sql.DB, email string) (string, error) {
 	// Make sure to cleanup after the program exits
 	defer stmt.Close()
 
-	// Replace the '?' in our prepared statement with 'name'
-	var id string
+	// Replace the '?'
+	var id int64
 	err = stmt.QueryRow(email).Scan(&id)
 
 	// Exit if we get an error
 	if err != nil {
-		// log.Fatal(err)
-		// log.Println(err)
-		return "", err
+		return 0, err
 	}
 
 	return id, nil
