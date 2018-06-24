@@ -2,9 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"html/template"
-	"io"
-	"net/http"
 	"todogo/auth"
 	"todogo/handlers"
 	"todogo/helper"
@@ -16,8 +13,6 @@ import (
 	"github.com/michaeljs1990/sqlitestore"
 )
 
-type H map[string]interface{}
-
 var store *sqlitestore.SqliteStore
 
 func init() {
@@ -28,21 +23,21 @@ func init() {
 	}
 }
 
-// TemplateRenderer is a custom html/template renderer for Echo framework
-type TemplateRenderer struct {
-	templates *template.Template
-}
-
-// Render renders a template document
-func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-
-	// Add global methods if data is a map
-	if viewContext, isMap := data.(map[string]interface{}); isMap {
-		viewContext["reverse"] = c.Echo().Reverse
-	}
-
-	return t.templates.ExecuteTemplate(w, name, data)
-}
+// // TemplateRenderer is a custom html/template renderer for Echo framework
+// type TemplateRenderer struct {
+// 	templates *template.Template
+// }
+//
+// // Render renders a template document
+// func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+//
+// 	// Add global methods if data is a map
+// 	if viewContext, isMap := data.(map[string]interface{}); isMap {
+// 		viewContext["reverse"] = c.Echo().Reverse
+// 	}
+//
+// 	return t.templates.ExecuteTemplate(w, name, data)
+// }
 
 // todo.go
 func main() {
@@ -53,10 +48,10 @@ func main() {
 	// Instance of echo
 	e := echo.New()
 
-	renderer := &TemplateRenderer{
-		templates: template.Must(template.ParseGlob("public/views/*.html")),
-	}
-	e.Renderer = renderer
+	// renderer := &TemplateRenderer{
+	// 	templates: template.Must(template.ParseGlob("public/views/*.html")),
+	// }
+	// e.Renderer = renderer
 
 	// Setup sessions
 	e.Use(session.Middleware(sessions.NewCookieStore([]byte("secret"))))
@@ -75,14 +70,11 @@ func main() {
 	// Restricted group
 	r := v1.Group("/me")
 	r.Use(middleware.JWT([]byte("secret")))
-	r.GET("", func(c echo.Context) error {
-		sess, _ := session.Get("session", c)
-		return c.JSON(http.StatusOK, H{
-			"email":   sess.Values["user-email"],
-			"name":    sess.Values["user-name"],
-			"picture": sess.Values["user-picture"],
-		})
-	})
+	r.GET("", handlers.GetMe(db))
+
+	logout := v1.Group("/logout")
+	logout.Use(middleware.JWT([]byte("secret")))
+	logout.GET("", auth.LogoutHandler())
 
 	// Start as a web server
 	e.Start(":" + helper.GetEnv("PORT", "8000"))

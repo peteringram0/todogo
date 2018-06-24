@@ -3,7 +3,6 @@ package handlers
 import (
 	"database/sql"
 	"net/http"
-	_ "strconv"
 
 	"todogo/models"
 	"todogo/structs"

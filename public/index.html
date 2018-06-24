@@ -11,9 +11,17 @@
       <button v-if="link" type="button" @click="login()">Login</button>
 
       <div v-if="token && user">
+        <button type="button" @click="logout()">Logout</button>
         <img style="width: 100px; height: 100px; border-radius: 100px;" :src="user.picture"/>
         <div>Email: {{ user.email }}</div>
         <div>Name: {{ user.name }}</div>
+
+        <div style="margin-top: 50px">
+            <ul>
+              <li v-for="task in user.tasks.items">{{ task.name }}</li>
+            </ul>
+        </div>
+
       </div>
     </div>
 
@@ -28,24 +36,29 @@
       data: {
         token: false,
         user: false,
-        link: false
+        link: false,
       },
       methods: {
         login() {
           window.location.href = this.link;
         },
+        logout() {
+          window.axios.get('/api/v1/logout',{headers: {"Authorization" : "Bearer " + this.token}})
+            .then(function(r) {
+              if(r.status === 200) {
+                localStorage.removeItem('token');
+                location.reload();
+              }
+            }.bind(this))
+        },
         getGoogleLink() {
-            window.axios.get('/api/v1/login')
-              .then(function(r) {
-                this.link = r.data.link
-              }.bind(this))
+          window.axios.get('/api/v1/login')
+            .then(function(r) {
+              this.link = r.data.link
+            }.bind(this))
         },
         getMe() {
-          window.axios.get('/api/v1/me',
-              {headers: {
-              "Authorization" : "Bearer " + this.token
-            }
-          })
+          window.axios.get('/api/v1/me',{headers: {"Authorization" : "Bearer " + this.token}})
             .then(function(r) {
               this.user = r.data;
             }.bind(this))
@@ -54,23 +67,19 @@
       mounted() {
 
         // Get token from URL param
-        this.token = getParameterByName('token');
+        var tokenInURL = getParameterByName('token');
+        var tokenInStorage = localStorage.getItem('token');
 
-        // Get google link if we dont have a token
-        if(this.token === false) {
-
-          if(localStorage.getItem("token") !== null) {
-            this.token = localStorage.getItem("token");
-            this.getMe();
-            return;
-          } else {
-            this.getGoogleLink();
-            return;
-          }
-
-        } else {
-          localStorage.setItem("token", this.token);
+        // If there ia a token in the URL and no token in storage
+        if(tokenInURL && tokenInStorage === null) {
+          localStorage.setItem("token", tokenInURL);
+          window.history.replaceState(null, null, window.location.pathname);
+          window.location.href = window.location.pathname;
+        } else if(tokenInStorage !== null) {
+          this.token = tokenInStorage;
           this.getMe();
+        } else if(!tokenInURL && tokenInStorage === null) {
+          this.getGoogleLink();
         }
 
       }

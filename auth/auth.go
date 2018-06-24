@@ -55,23 +55,15 @@ func init() {
 		},
 		Endpoint: google.Endpoint,
 	}
-
 }
 
 func LoginHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 
-		// log.Printf(helper.GetEnv("REDIRECT_URL", "http://127.0.0.1:8000/api/v1/auth"))
-
 		state := RandToken(32)
 		link := getLoginURL(state)
 
 		sess, _ := session.Get("session", c)
-		// sess.Options = &sessions.Options{
-		// 	Path:     "/",
-		// 	MaxAge:   86400 * 7,
-		// 	HttpOnly: true,
-		// }
 		sess.Values["state"] = state
 		sess.Save(c.Request(), c.Response())
 
@@ -79,10 +71,14 @@ func LoginHandler() echo.HandlerFunc {
 			"link": link,
 		})
 
-		// return c.Render(http.StatusOK, "auth.html", H{
-		// "link": link,
-		// })
+	}
+}
 
+func LogoutHandler() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		return c.JSON(http.StatusOK, H{
+			"logout": "logout trigger",
+		})
 	}
 }
 
@@ -134,23 +130,11 @@ func AuthHandler(db *sql.DB) echo.HandlerFunc {
 		sess.Values["user-picture"] = u.Picture
 		sess.Save(c.Request(), c.Response())
 
-		id, err := models.GetUser(db, u.Email)
+		_, err = models.GetUser(db, u.Email)
 
 		if err != nil {
-
 			models.CreateUser(db, u)
-
-			log.Printf("created user")
-
-		} else {
-
-			log.Printf("user already exists ID: %s", id)
-
 		}
-
-		/**
-			START JWT STUFF
-		**/
 
 		// Create token
 		token := jwt.New(jwt.SigningMethodHS256)
@@ -165,14 +149,6 @@ func AuthHandler(db *sql.DB) echo.HandlerFunc {
 		if err != nil {
 			return err
 		}
-
-		// return c.JSON(http.StatusOK, H{
-		// "token": t,
-		// })
-
-		/**
-			END JWT STUFF
-		**/
 
 		return c.Redirect(http.StatusSeeOther, "/?token="+t)
 
