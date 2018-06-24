@@ -21,9 +21,10 @@
               <input type="text" v-model="task.name"/>
               <button type="button" @click="addTask()">Add</button>
               <ul>
-                <li v-for="task in user.tasks.items">
+                <li v-for="(task, index) in user.tasks.items">
                   <input type="text" v-model="task.name">
                   <button type="button" @click="edit(task)">Edit!</button>
+                  <button type="button" @click="deleteItem(task.id, index)">Delete!</button>
                 </li>
               </ul>
           </div>

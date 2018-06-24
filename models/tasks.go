@@ -84,3 +84,28 @@ func PutTask(db *sql.DB, id string, name string) (int64, error) {
 	return result.RowsAffected()
 
 }
+
+func DeleteTask(db *sql.DB, id string) (int64, error) {
+
+	sql := `DELETE FROM tasks WHERE id=?`
+
+	// Create a prepared SQL statement
+	stmt, err := db.Prepare(sql)
+	// Exit if we get an error
+	if err != nil {
+		panic(err)
+	}
+	// Make sure to cleanup after the program exits
+	defer stmt.Close()
+
+	// Replace the '?' in our prepared statement with 'name'
+	result, err2 := stmt.Exec(id)
+
+	// Exit if we get an error
+	if err2 != nil {
+		panic(err2)
+	}
+
+	return result.RowsAffected()
+
+}

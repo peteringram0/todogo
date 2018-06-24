@@ -88,3 +88,24 @@ func PutTask(db *sql.DB) echo.HandlerFunc {
 
 	}
 }
+
+func DeleteTask(db *sql.DB) echo.HandlerFunc {
+	return func(c echo.Context) error {
+
+		// Add a task using our new model
+		rowsAffected, err := models.DeleteTask(db, c.Param("id"))
+
+		if rowsAffected == 0 {
+			return c.JSON(http.StatusBadRequest, H{
+				"error": "Cant delete that !!",
+			})
+		} else if rowsAffected >= 1 && err == nil {
+			return c.JSON(http.StatusOK, H{
+				"deleted": c.Param("id"),
+			})
+		} else {
+			return err
+		}
+
+	}
+}

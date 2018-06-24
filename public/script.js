@@ -48,7 +48,9 @@ new Vue({
             if(this.user.tasks.items === null)
               this.user.tasks.items = [];
 
-            this.user.tasks.items.push(r.data)
+            this.user.tasks.items.push(r.data);
+
+            this.task.name = null;
 
           }
         }.bind(this))
@@ -57,6 +59,14 @@ new Vue({
       window.axios.put('/api/v1/tasks/' + item.id, {
         name: item.name
       }, {headers: {"Authorization" : "Bearer " + this.token}})
+    },
+    deleteItem(id, index) {
+      window.axios.delete('/api/v1/tasks/' + id, {headers: {"Authorization" : "Bearer " + this.token}})
+        .then(function(r) {
+          console.log(r)
+          if(r.status == 200)
+            this.user.tasks.items.splice(index, 1);
+        }.bind(this))
     }
   },
   mounted() {
