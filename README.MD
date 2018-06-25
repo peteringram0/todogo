@@ -21,9 +21,8 @@ bash ./build.sh
 
 ### Run
 ````bash
-todo
+todogo
 ````
-
 
 ##### Notes
 ````bash
@@ -33,10 +32,3 @@ brew install dep
 # View Database
 sqlite3 storage.db
 ````
-
-
-#### Questions
-* Is there a better way then building and running ?
-* I create JTW and when only allow to route when its valid, but i don't know how to confirm the user from the JTW
-* Work out how to invalidate the JWT & Session
-* There is an issue when your first login, you need to logout and back in for it to work
