@@ -4,3 +4,4 @@ sessions.db
 /src
 .idea
 /vendor
+creds.json
